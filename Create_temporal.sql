@@ -1,0 +1,36 @@
+
+CREATE OR REPLACE TYPE LIBRO_OBJ AS OBJECT (
+    ISBN VARCHAR2(20),
+    Titulo VARCHAR2(40),
+    Autor VARCHAR2(255),
+    Genero VARCHAR2(100),
+    Idioma VARCHAR2(50),
+    Sinopsis VARCHAR(255),
+    ImagenPortada VARCHAR2(60),
+    Ejemplares EJEMPLARES_TABTYP
+    
+);
+/
+
+CREATE OR REPLACE TYPE EJEMPLAR_OBJ AS OBJECT (
+    Id NUMBER,
+    Estado VARCHAR2(50),
+    Formato VARCHAR2(50),
+    PrecioCoste NUMBER(10,2),
+    Disponible CHAR(1),
+    DescuentoPremium NUMBER(5,2),
+    ISBN REF LIBRO_OBJ
+) NOT FINAL;
+
+
+CREATE TYPE EJEMPLARES_TABTYP AS TABLE OF EJEMPLAR_OBJ;
+
+CREATE TABLE LIBRO_TAB OF LIBRO_OBJ (
+    ISBN PRIMARY KEY,
+    Titulo NOT NULL,
+    Autor NOT NULL
+)
+NESTED TABLE Ejemplares STORE AS EJEMPLARES_TAB(
+    (PRIMARY KEY(Ejemplares,Id), CHECK(Precio > 0))
+)
+
