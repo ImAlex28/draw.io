@@ -17,11 +17,11 @@ CREATE OR REPLACE TYPE EJEMPLAR_OBJ AS OBJECT (
     Estado VARCHAR2(50),
     Formato VARCHAR2(50),
     PrecioCoste NUMBER(10,2),
-    Disponible CHAR(1),
+    Disponible VARCHAR2(50),
     DescuentoPremium NUMBER(5,2),
     ISBN REF LIBRO_OBJ
 ) NOT FINAL;
-
+/
 
 CREATE TYPE EJEMPLARES_TABTYP AS TABLE OF EJEMPLAR_OBJ;
 
@@ -31,6 +31,291 @@ CREATE TABLE LIBRO_TAB OF LIBRO_OBJ (
     Autor NOT NULL
 )
 NESTED TABLE Ejemplares STORE AS EJEMPLARES_TAB(
-    (PRIMARY KEY(Ejemplares,Id), CHECK(Precio > 0))
-)
+    (
+    PRIMARY KEY(Ejemplares,Id),
+    CHECK(Precio > 0),
+    CHECK(Estado IN ('Nuevo', 'Usado','Deteriorado')),
+    CHECK(Formato IN ('Fisico', 'Digital')),
+    CHECK(Disponible IN ('Alquilado', 'Disponible'))
+    )
+);
+/
+
+CREATE OR REPLACE TYPE EJEMPLARVENTA_OBJ UNDER EJEMPLAR_OBJ (
+    PrecioVenta NUMBER(5,2)
+);
+/
+
+CREATE TABLE EJEMPLARVENTA_TAB OF EJEMPLARVENTA_OBJ(
+    CHECK(PrecioVenta>0)
+);
+/
+
+CREATE OR REPLACE TYPE EJEMPLARALQUILER_OBJ UNDER EJEMPLAR_OBJ (
+    PrecioPorDia NUMBER(5,2),
+    DuracionAlquiler NUMBER
+);
+/
+
+CREATE TABLE EJEMPLARALQUILER_TAB OF EJEMPLARALQUILER_OBJ (
+    CHECK(PrecioPorDia>0)
+    CHECK(DuracionAlquiler>0)
+);
+/
+
+CREATE OR REPLACE TYPE USUARIO_OBJ AS OBJECT (
+    Id NUMBER,
+    Nombre VARCHAR2(255),
+    CorreoElectronico VARCHAR2(255),
+    Contrasena VARCHAR2(255),
+    NumeroTlf VARCHAR2(20),
+    FechaNacimiento DATE,
+    DNI VARCHAR2(20),
+    "Referencia a transaccion"
+) NOT FINAL;
+/
+
+CREATE TABLE USUARIO_TAB OF USUARIO_OBJ(
+    Id PRIMARY KEY,
+    DNI UNIQUE NOT NULL
+);
+/
+
+CREATE OR REPLACE TYPE CLIENTE_OBJ UNDER USUARIO_OBJ (
+    Puntuacion NUMBER,
+    TipoCuenta VARCHAR2(50)
+);
+/
+
+CREATE OR REPLACE TYPE ADMINISTRADOR_OBJ UNDER USUARIO_OBJ (
+    FechaDeAlta DATE
+);
+/
+
+CREATE TABLE CLIENTE_TAB OF CLIENTE_OBJ (
+    CHECK(Puntuacion>=0),
+    CHECK(TipoCuenta IN ('Basica','Premium'))
+);
+/
+
+CREATE TABLE ADMINSTRADOR_TAB OF ADMINISTRADOR_OBJ(
+    FechaDeAlta NOT NULL
+);
+/
+
+CREATE OR REPLACE TYPE TRANSACCION_OBJ AS OBJECT(
+    IdTransaccion NUMBER,
+    Fecha DATE,
+    Tarjeta REF TRAJETA_OBJ,
+    ImporteTotal NUMBER(10,2)
+    "Referencia a factura"
+);
+/
+
+CREATE TABLE TRANSACCCION_TAB OF TRANSACCION_OBJ(
+    IdTransaccion PRIMARY KEY,
+    Fecha NOT NULL,
+    CHECK(ImporteTotal>0)
+);
+/
+
+CREATE OR REPLACE TYPE TARJETA_OBJ AS OBJECT(
+    Numero NUMBER,
+    CVV NUMBER,
+    FechaCaducidad DATE
+);
+/
+
+CREATE TABLE TARJETA_TAB AS TARJETA_OBJ(
+    Numero PRIMARY KEY,
+    CVV NOT NULL,
+    FechaCaducidad NOT NULL
+);
+/
+
+CREATE OR REPLACE TYPE CARGO_OBJ AS OBJECT(
+    Id NUMBER,
+    Importe NUMBER(5,2),
+    Fecha DATE,
+);
+/
+
+CREATE TABLE CARGO_TAB OF CARGO_OBJ(
+    Id PRIMARY KEY,
+    CHECK(Importe>0),
+    Fecha NOT NULL
+);
+/
+
+CREATE OR REPLACE TYPE COMPRA_OBJ UNDER TRANSACCION_OBJ(
+    Puntos NUMBER
+    "NESTED TABLE DE LINEAS COMPRA"
+);
+/
+
+CREATE TABLE COMPRA_TAB OF COMPRA_OBJ(
+    CHECK(Puntos>=0)
+);
+/
+
+CREATE OR REPLACE TYPE LINEA_COMPRA_OBJ AS OBJECT(
+    IdLineaCompra NUMBER,
+    IdEjemplarVenta REF EJEMPLARVENTA_OBJ
+    "ATRIBUTO OBJETO DE RESEÑA
+    Resena RESENA_OBJ"
+);
+/
+
+CREATE TABLE LINEA_COMPRA_TAB OF LINEA_COMPRA_OBJ(
+    IdLineaCompra PRIMARY KEY
+);
+/
+
+CREATE OR REPLACE TYPE ALQUILER_OBJ UNDER TRANSACCION_OBJ(
+    IdAlquiler NUMBER,
+    FechaInicio DATE
+);
+/
+
+CREATE TABLE ALQUILER_TAB OF ALQUILER_TAB(
+    IdAlquiler PRIMARY KEY,
+    FechaInicio NOT NULL,
+    "NESTED TABLE DE LINEAS"
+);
+/
+
+CREATE OR REPLACE TYPE LINEAS_ALQUILER_OBJ AS OBJECT(
+    IdLineaAlquiler NUMBER,
+    IdEjemplarAlquiler REF EJEMPLARALQUILER_OBJ,
+    "ATRIBUTO OBJETO DE RESEÑA
+    Resena RESENA_OBJ"
+);
+/
+
+CREATE TABLE LINEA_ALQUILER_TAB OF LINEA_ALQUILER_OBJ(
+    IdLineaAlquiler PRIMARY KEY
+);
+/
+
+CREATE OR REPLACE TYPE RESENA_OBJ AS OBJECT(
+    IdResena NUMBER,
+    TextoResena VARCHAR2(255),
+    Puntuacion NUMBER,
+    Estrellas NUMBER,
+    Cliente REF CLIENTE_OBJ,
+    Administrador REF ADMINISTRADOR_OBJ,
+);
+/
+
+CREATE TABLE RESENA_TAB OF RESENA_OBJ(
+    IdResena PRIMARY KEY,
+    Puntuacion DEFAULT 0 CHECK(Puntuacion>=0 AND Puntuacion<=10),
+    CHECK(Estrellas>0 AND Estrellas<=5)
+);
+/
+
+CREATE OR REPLACE TYPE DIRECCION_OBJ AS OBJECT(
+    TipoDeVia VARCHAR2(255),
+    Nombre VARCHAR2(255),
+    Numero NUMBER,
+    Puerta VARCHAR2(5),
+    Piso NUMBER
+);
+/
+
+CREATE TABLE DORECCION_TAB OF DIRECCION_OBJ(
+    TipoDeVia NOT NULL,
+    Nombre NOT NULL,
+    Numero NOT NULL
+);
+/
+
+CREATE OR REPLACE TYPE FACTURA_OBJ AS OBJECT(
+    IdFactura NUMBER,
+    PrecioTotal NUMBER,
+    Comentario VARCHAR2(255),
+    FechaEmision DATE,
+    FechaVencimiento DATE,
+    CosteEnvio NUMBER(5,2)
+);
+/
+
+CREATE TABLE FACTURA_TAB OF FACTURA_OBJ(
+    IdFactura PRIMARY KEY,
+    CHECK(PrecioTotal>0),
+    CHECK(CosteEnvio>0),
+    FechaEmision NOT NULL,
+    FechaVencimiento NOT NULL
+    "NESTED TABLE LINEAS FACTURA"
+);
+/
+
+CREATE OR REPLACE TYPE LINEA_FACTURA_OBJ AS OBJECT(
+    IdLineaFactura NUMBER,
+    PrecioTotal NUMBER(5,2),
+    LineaCompra REF LINEA_COMPRA_OBJ,
+    LineaAlquiler REF LINEA_ALQUILER_OBJ
+);
+/
+
+CREATE TABLE LINEA_FACTURA_TAB OF LINEA_FACTURA_OBJ(
+    IdLineaFactura PRIMARY KEY,
+    CHECK(PrecioTotal>0)
+);
+/
+
+CREATE OR REPLACE TYPE PROVEEDOR_OBJ AS OBJECT(
+    Id NUMBER,
+    Email VARCHAR2(255),
+    Nombre VARCHAR2(255),
+    Telefono VARCHAR2(255)
+    "NESTEDS DE PEDIDOS Y DE LIBROS"
+);
+/
+
+CREATE TABLE PROVEEDOR_TAB OF PROVEEDOR_OBJ(
+    Id PRIMARY KEY,
+    Nombre NOT NULL,
+);
+/
+
+CREATE OR REPLACE TYPE PEDIDO_PROVEEDOR_OBJ AS OBJECT(
+    Id NUMBER,
+    Fecha DATE,
+    Estado VARCHAR2(255)
+);
+/
+
+CREATE TABLE PEDIDO_PROVEEDOR_TAB OF PEDIDO_PROVEEDOR_OBJ(
+    Id PRIMARY KEY,
+    Fecha NOT NULL,
+    CHECK(Estado IN ('Pendiente', 'Recibido', 'Cancelado'))
+
+    "NESTED TABLE LINEAS PEDIDO"
+);
+/
+
+CREATE OR REPLACE TYPE LINEAS_PEDIDO_OBJ AS OBJECT(
+    Id NUMBER,
+    Cantidad NUMBER,
+    PrecioUnitario NUMBER(5,2),
+    Libro REF LIBRO_OBJ
+);
+/
+
+CREATE TABLE LINEAS_PEDIDO_TAB OF LINEAS_PEDIDO_OBJ(
+    Id PRIMARY KEY,
+    CHECK(Cantidad>0),
+    CHECK(PrecioUnitario>0)
+);
+/
+
+
+
+
+
+
+
+
+
 
