@@ -50,7 +50,7 @@ CREATE OR REPLACE TYPE t_linea_pedido AS OBJECT (
 CREATE TABLE LineaPedido OF t_linea_pedido PRIMARY KEY (Id)
     NESTED TABLE IdPedido STORE AS IdPedido_tab;
 
-CREATE OR REPLACE TYPE t_ejemplar AS OBJECT (
+CREATE OR REPLACE TYPE EJEMPLAR_OBJ AS OBJECT (
     Id NUMBER,
     Estado VARCHAR2(50),
     Formato VARCHAR2(50),
@@ -61,25 +61,25 @@ CREATE OR REPLACE TYPE t_ejemplar AS OBJECT (
 ) NOT FINAL;
 /
 
-CREATE TABLE Ejemplar OF t_ejemplar PRIMARY KEY (Id)
+CREATE TABLE Ejemplar OF EJEMPLAR_OBJ PRIMARY KEY (Id)
     NESTED TABLE ISBN STORE AS ISBN_tab;
 
-CREATE OR REPLACE TYPE t_ejemplar_venta UNDER t_ejemplar (
-    IdEjemplar REF t_ejemplar,
+CREATE OR REPLACE TYPE EJEMPLAR_OBJ_venta UNDER EJEMPLAR_OBJ (
+    IdEjemplar REF EJEMPLAR_OBJ,
     PrecioVenta NUMBER(10,2)
 );
 /
 
-CREATE TABLE EjemplarVenta OF t_ejemplar_venta PRIMARY KEY (IdEjemplar);
+CREATE TABLE EjemplarVenta OF EJEMPLAR_OBJ_venta PRIMARY KEY (IdEjemplar);
 
-CREATE OR REPLACE TYPE t_ejemplar_alquiler UNDER t_ejemplar (
-    IdEjemplar REF t_ejemplar,
+CREATE OR REPLACE TYPE EJEMPLAR_OBJ_alquiler UNDER EJEMPLAR_OBJ (
+    IdEjemplar REF EJEMPLAR_OBJ,
     PrecioPorDia NUMBER(10,2),
     DuracionAlquiler NUMBER
 );
 /
 
-CREATE TABLE EjemplarAlquiler OF t_ejemplar_alquiler PRIMARY KEY (IdEjemplar);
+CREATE TABLE EjemplarAlquiler OF EJEMPLAR_OBJ_alquiler PRIMARY KEY (IdEjemplar);
 
 CREATE OR REPLACE TYPE t_factura AS OBJECT (
     IdFactura NUMBER,
@@ -131,7 +131,7 @@ CREATE TABLE Alquiler OF t_alquiler PRIMARY KEY (IdAlquiler);
 
 CREATE OR REPLACE TYPE t_linea_compra AS OBJECT (
     IdLineaCompra NUMBER,
-    IdEjemplarCompra REF t_ejemplar_venta
+    IdEjemplarCompra REF EJEMPLAR_OBJ_venta
 );
 /
 
@@ -139,7 +139,7 @@ CREATE TABLE LineaCompra OF t_linea_compra PRIMARY KEY (IdLineaCompra);
 
 CREATE OR REPLACE TYPE t_linea_alquiler AS OBJECT (
     IdLineaAlquiler NUMBER,
-    IdEjemplarAlquiler REF t_ejemplar_alquiler
+    IdEjemplarAlquiler REF EJEMPLAR_OBJ_alquiler
 );
 /
 
