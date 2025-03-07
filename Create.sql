@@ -1,15 +1,22 @@
-CREATE OR REPLACE TYPE t_libro AS OBJECT (
+CREATE OR REPLACE TYPE LIBRO_OBJ AS OBJECT (
     ISBN VARCHAR2(20),
     Titulo VARCHAR2(40),
     Autor VARCHAR2(255),
     Genero VARCHAR2(100),
     Idioma VARCHAR2(50),
-    Sinopsis CLOB,
+    Sinopsis VARCHAR(255),
     ImagenPortada VARCHAR2(60)
+
 );
 /
 
-CREATE TABLE Libro OF t_libro PRIMARY KEY (ISBN);
+CREATE TABLE LIBRO_TAB OF LIBRO_OBJ (
+ ISBN PRIMARY KEY
+)
+ NESTED TABLE Lineas STORE AS Lineas_ntab (
+ ( PRIMARY KEY (NESTED_TABLE_ID,NL),
+ CHECK (Cantidad > 0)) );
+
 
 CREATE OR REPLACE TYPE t_proveedor AS OBJECT (
     Id NUMBER,
@@ -50,7 +57,7 @@ CREATE OR REPLACE TYPE t_ejemplar AS OBJECT (
     PrecioCoste NUMBER(10,2),
     Disponible CHAR(1),
     DescuentoPremium NUMBER(5,2),
-    ISBN REF t_libro
+    ISBN REF LIBRO_OBJ
 ) NOT FINAL;
 /
 
@@ -138,7 +145,7 @@ CREATE OR REPLACE TYPE t_linea_alquiler AS OBJECT (
 
 CREATE TABLE LineaAlquiler OF t_linea_alquiler PRIMARY KEY (IdLineaAlquiler);
 
-CREATE OR REPLACE TYPE t_usuario AS OBJECT (
+CREATE OR REPLACE TYPE USUARIO_OBJ AS OBJECT (
     Id NUMBER,
     Nombre VARCHAR2(255),
     CorreoElectronico VARCHAR2(255),
@@ -149,10 +156,13 @@ CREATE OR REPLACE TYPE t_usuario AS OBJECT (
 )NOT FINAL;
 /
 
-CREATE TABLE Usuario OF t_usuario PRIMARY KEY (Id);
+ CREATE TABLE USUARIO_TAB OF USUARIO_OBJ (
+ Id PRIMARY KEY,
+ DNI UNIQUE NOT NULL,
+ "REFERENCIA TABLA TRANSACCION");
 
-CREATE OR REPLACE TYPE t_cliente UNDER t_usuario (
-    Id REF t_usuario,
+CREATE OR REPLACE TYPE t_cliente UNDER USUARIO_OBJ (
+    Id REF USUARIO_OBJ,
     Puntuacion NUMBER,
     TipoCuenta VARCHAR2(50)
 );
@@ -161,21 +171,21 @@ CREATE OR REPLACE TYPE t_cliente UNDER t_usuario (
 CREATE TABLE Cliente OF t_cliente PRIMARY KEY (Id);
 
 CREATE OR REPLACE TYPE t_administrador AS OBJECT (
-    Id REF t_usuario,
+    Id REF USUARIO_OBJ,
     FechaDeAlta DATE
 );
 /
 
 CREATE TABLE Administrador OF t_administrador PRIMARY KEY (Id);
 
-CREATE OR REPLACE TYPE t_direccion UNDER t_usuario (
+CREATE OR REPLACE TYPE t_direccion UNDER USUARIO_OBJ (
     Id NUMBER,
     TipoDeVia VARCHAR2(50),
     Nombre VARCHAR2(255),
     Numero VARCHAR2(10),
     Piso VARCHAR2(10),
     Puerta VARCHAR2(10),
-    IdUsuario REF t_usuario
+    IdUsuario REF USUARIO_OBJ
 );
 /
 
