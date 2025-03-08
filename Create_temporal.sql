@@ -251,3 +251,18 @@ NESTED TABLE Transacciones STORE AS TRANSACCIONES2_NTAB;
 ALTER TABLE FACTURA_TAB ADD CONSTRAINT chk_precio_total CHECK (PrecioTotal > 0);
 ALTER TABLE FACTURA_TAB ADD CONSTRAINT chk_coste_envio CHECK (CosteEnvio > 0);
 /
+
+CREATE OR REPLACE TYPE CARGO_OBJ AS OBJECT (
+    IdCargo NUMBER,
+    Importe NUMBER(5,2),
+    Fecha DATE,
+    Alquiler REF ALQUILER_OBJ
+);
+/
+
+CREATE TABLE CARGO_TAB OF CARGO_OBJ (
+    IdCargo PRIMARY KEY,
+    CHECK(Importe > 0),
+    Fecha NOT NULL
+);
+/
