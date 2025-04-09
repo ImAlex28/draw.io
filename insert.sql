@@ -23,5 +23,55 @@ VALUES (2, 'Editorial Anaya', 'info@anaya.es', 923456789);
 
 COMMIT;
 
+-- Cliente
+INSERT INTO CLIENTE_TAB VALUES (
+    3, 'Ana', 'Gomez', 'Lopez', 'ana.gomez@example.com', 'clave123', 612345678,
+    TO_DATE('1990-04-15','YYYY-MM-DD'), '12345679A',
+    (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Mayor'),
+    4.5, 'Premium'
+);
+
+-- Administrador
+INSERT INTO ADMINISTRADOR_TAB VALUES (
+    4, 'Carlos', 'Ruiz', 'Martinez', 'carlos.ruiz@example.com', 'adminpass', 699112233,
+    TO_DATE('1985-09-10','YYYY-MM-DD'), '87654329B',
+    (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Mayor'),
+    TO_DATE('2020-01-01','YYYY-MM-DD')
+);
+COMMIT;
+
+-- Libro
 INSERT INTO LIBRO_TAB
-VALUES('0123456789124', 'Helou', 'yo', 'drama', 'castellano', 'una historia de miedo', 'image.png', EJEMPLARESVENTA_NTABTYP(), EJEMPLARESALQUILER_NTABTYP(), (SELECT REF(p) FROM PROVEEDOR_TAB p WHERE p.ID = 2));
+VALUES('0123456789136', 'Helou', 'yo', 'drama', 'castellano', 'una historia de miedo', 'image.png', EJEMPLARESVENTA_NTABTYP(
+EJEMPLAR_VENTA_OBJ(1,'Nuevo','Digital',12,1,10,16)
+), EJEMPLARESALQUILER_NTABTYP(
+EJEMPLAR_ALQUILER_OBJ(1,'Nuevo','Digital',12,1,10,2,10)
+), (SELECT REF(p) FROM PROVEEDOR_TAB p WHERE p.ID = 1));
+COMMIT;
+
+-- Compra (Falla)
+INSERT INTO COMPRA_TAB
+VALUES (
+1, TO_DATE('2025-03-15','YYYY-MM-DD'),20,'COMPRA',2.99,
+(SELECT REF(t) FROM TARJETA_TAB t WHERE t.NUMERO = 1234567890123456),
+(SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Mayor'),
+(SELECT REF(c) FROM CLIENTE_TAB c WHERE c.DNI = '12345679A'),
+10,
+LINEA_COMPRA_NTABTYP(
+        LINEA_COMPRA_OBJ(
+            1,
+            (SELECT REF(e)
+            FROM TABLE(
+                    SELECT l.EJEMPLARESVENTA
+                    FROM LIBRO_TAB l
+                    WHERE l.ISBN = '0123456789136'
+             ) e
+             WHERE e.ID = 1),
+            1,
+            RESENA_OBJ(1, 'Excelente libro', 5, 5,
+                (SELECT REF(c) FROM CLIENTE_TAB c WHERE c.DNI = '12345679A'),
+                (SELECT REF(a) FROM ADMINISTRADOR_TAB a WHERE a.DNI = '87654329B')
+            )
+        )
+    )
+);
