@@ -42,7 +42,7 @@ INSERT INTO CLIENTE_TAB
       'alejandro@correo.com', 'pass123',
       600111222, TO_DATE('1990-01-15','YYYY-MM-DD'), '12345678A',
       (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Mayor'),
-      8, 'Premium'
+      400, 'Premium'
     )
   );
 
@@ -54,7 +54,7 @@ INSERT INTO CLIENTE_TAB
       'maria@correo.com', 'maria456',
       600222333, TO_DATE('1988-03-22','YYYY-MM-DD'), '87654321B',
       (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Diagonal'),
-      5, 'Estandar'
+      250, 'Premium'
     )
   );
 
@@ -66,7 +66,7 @@ INSERT INTO CLIENTE_TAB
       'carlos@correo.com', 'carlos789',
       600333444, TO_DATE('1992-07-30','YYYY-MM-DD'), '11223344C',
       (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Nueva'),
-      6, 'Premium'
+      100, 'Estandar'
     )
   );
 
@@ -210,7 +210,7 @@ INSERT INTO COMPRA_TAB
       (SELECT REF(t) FROM TARJETA_TAB t WHERE t.NUMERO = 1234567890123456),
       (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Mayor'),
       (SELECT REF(c) FROM CLIENTE_TAB c WHERE c.DNI = '12345678A'),
-      10,  -- Puntos
+      400,  -- Puntos
       LINEA_COMPRA_NTABTYP(
          LINEA_COMPRA_OBJ(
             1,  -- ID_LINEACOMPRA
@@ -241,7 +241,7 @@ INSERT INTO COMPRA_TAB
       (SELECT REF(t) FROM TARJETA_TAB t WHERE t.NUMERO = 9876543210987654),
       (SELECT REF(d) FROM DIRECCION_TAB d WHERE d.NOMBRE = 'Nueva'),
       (SELECT REF(c) FROM CLIENTE_TAB c WHERE c.DNI = '87654321B'),
-      8,
+      250,
       LINEA_COMPRA_NTABTYP(
          LINEA_COMPRA_OBJ(
             1,
